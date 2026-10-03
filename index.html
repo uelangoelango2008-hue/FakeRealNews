@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detection System using Machine Learning</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+    <!-- Main Navigation Header -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-icon">📰</span>
+                <span class="logo-text">Fake News Detection System</span>
+            </div>
+            <div class="nav-tags">
+                <span class="tag">TF-IDF Vectorizer</span>
+                <span class="tag">Logistic Regression</span>
+                <span class="tag highlight">Accuracy: 94.20%</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        
+        <!-- Introduction Header -->
+        <div class="page-intro">
+            <h1>Fake News Detection</h1>
+            <p>A supervised machine learning system to classify news articles as real or fake based on natural language processing and TF-IDF feature extraction.</p>
+        </div>
+
+        <!-- Prediction Form Card -->
+        <div class="card form-card">
+            
+            <!-- Quick Test Samples -->
+            <div class="sample-toolbar">
+                <span class="toolbar-label">Quick Test Samples:</span>
+                <button type="button" class="btn-sample sample-real" id="btnRealSample">Load Real News Sample</button>
+                <button type="button" class="btn-sample sample-fake" id="btnFakeSample">Load Fake News Sample</button>
+                <button type="button" class="btn-sample sample-clear" id="btnClear">Clear</button>
+            </div>
+
+            <!-- Form -->
+            <form action="/" method="POST" id="predictionForm">
+                <div class="form-group">
+                    <div class="label-row">
+                        <label for="news">Enter News Headline / Article Content:</label>
+                        <div class="char-counter">
+                            <span id="wordCount">0 words</span>
+                            <span class="separator">|</span>
+                            <span id="charCount">0 characters</span>
+                        </div>
+                    </div>
+                    
+                    <textarea 
+                        name="news" 
+                        id="news" 
+                        rows="8" 
+                        placeholder="Type or paste the news article here to test..."
+                        required>{{ news_input if news_input else '' }}</textarea>
+                </div>
+
+                <!-- Input Validation Error -->
+                {% if validation_error %}
+                <div class="alert alert-error">
+                    <span class="alert-icon">⚠️</span>
+                    <span>{{ validation_error }}</span>
+                </div>
+                {% endif %}
+
+                <div class="button-row">
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                        <span>Predict News Authenticity</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Result Display Card -->
+        {% if result %}
+        <div class="card result-card {{ 'result-real' if result.status == 'real' else 'result-fake' }}" id="resultSection">
+            
+            <div class="result-top">
+                <span class="result-tag">Prediction Result</span>
+                <span class="confidence-tag">{{ result.confidence_tier }} ({{ result.confidence }}%)</span>
+            </div>
+
+            <div class="verdict-box">
+                <div class="verdict-icon">
+                    {% if result.status == 'real' %}
+                    <span class="badge-real">✅</span>
+                    {% else %}
+                    <span class="badge-fake">❌</span>
+                    {% endif %}
+                </div>
+                <div class="verdict-info">
+                    <h2>{{ result.label }}</h2>
+                    <p class="verdict-desc">
+                        {% if result.status == 'real' %}
+                        The model classified this article as <strong>Real News</strong> based on the learned vocabulary patterns and linguistic structure from the WELFake dataset.
+                        {% else %}
+                        The model classified this article as <strong>Fake News</strong> based on the vocabulary patterns and styling indicators commonly found in fabricated articles.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Confidence Bar -->
+            <div class="confidence-meter-container">
+                <div class="meter-label-row">
+                    <span>Model Confidence:</span>
+                    <strong>{{ result.confidence }}%</strong>
+                </div>
+                <div class="meter-track">
+                    <div class="meter-fill" style="width: {{ result.confidence }}%;"></div>
+                </div>
+            </div>
+
+            <!-- Probabilities Breakdown -->
+            <div class="details-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Real News Probability</span>
+                    <span class="detail-value text-green">{{ result.real_probability }}%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Fake News Probability</span>
+                    <span class="detail-value text-red">{{ result.fake_probability }}%</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Total Words Analyzed</span>
+                    <span class="detail-value">{{ result.word_count }}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Classifier Algorithm</span>
+                    <span class="detail-value">Logistic Regression</span>
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- Project Methodology & Architecture Cards -->
+       
+            <!-- Model Evaluation Metrics Card -->
+            <div class="card info-card">
+                <h3>Model Performance (Held-out Test Set)</h3>
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Score</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Accuracy</strong></td>
+                            <td class="metric-score">94.20%</td>
+                            <td>Overall proportion of correct predictions</td>
+                        </tr>
+                        <tr>
+                            <td><strong>F1-Score</strong></td>
+                            <td class="metric-score">94.43%</td>
+                            <td>Harmonic mean of precision and recall</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recall</strong></td>
+                            <td class="metric-score">95.60%</td>
+                            <td>Proportion of actual real news correctly identified</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Precision</strong></td>
+                            <td class="metric-score">93.29%</td>
+                            <td>Proportion of predicted real news that were actually real</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Dataset</strong></td>
+                            <td class="metric-score">72,134 records</td>
+                            <td>WELFake dataset (Word Embedding over Linguistic Features)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
